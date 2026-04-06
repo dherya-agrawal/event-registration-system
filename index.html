@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Event Registration</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 30px;
+  width: 350px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.success {
+  color: green;
+  font-weight: bold;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h3>🚀 Event Registration</h3>
+
+  <form id="form">
+    <input type="text" class="form-control mb-3" id="name" placeholder="Full Name" required>
+
+    <select class="form-control mb-3" id="event" required>
+      <option value="">Select Event</option>
+      <option>Tech Fest</option>
+      <option>Cultural Fest</option>
+      <option>Workshop</option>
+    </select>
+
+    <button class="btn btn-primary w-100">Register</button>
+  </form>
+
+  <p id="msg" class="success"></p>
+
+  <hr>
+
+  <button onclick="loadData()" class="btn btn-dark w-100">📊 View Registrations</button>
+
+  <div id="data" class="mt-2"></div>
+</div>
+
+<script>
+// ✅ REGISTER FUNCTION (FIXED)
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  console.log("Button Clicked ✅");
+
+  const name = document.getElementById("name").value;
+  const event = document.getElementById("event").value;
+
+  try {
+    const res = await fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ name, event })
+    });
+
+    const data = await res.json();
+
+    document.getElementById("msg").innerText = data.message;
+
+    // Reset form
+    document.getElementById("form").reset();
+
+  } catch (err) {
+    console.log("ERROR:", err);
+    document.getElementById("msg").innerText = "❌ Server not responding";
+  }
+});
+
+
+// ✅ LOAD DATA FUNCTION (TABLE FORMAT)
+async function loadData() {
+  try {
+    const res = await fetch("http://localhost:3000/data");
+    const data = await res.json();
+
+    if (data.length === 0) {
+      document.getElementById("data").innerHTML = "No registrations yet";
+      return;
+    }
+
+    let html = `
+      <table class="table table-bordered mt-2">
+        <tr>
+          <th>Name</th>
+          <th>Event</th>
+        </tr>
+    `;
+
+    data.forEach(d => {
+      html += `
+        <tr>
+          <td>${d.name}</td>
+          <td>${d.event}</td>
+        </tr>
+      `;
+    });
+
+    html += "</table>";
+
+    document.getElementById("data").innerHTML = html;
+
+  } catch (err) {
+    console.log(err);
+    document.getElementById("data").innerText = "Error loading data";
+  }
+}
+</script>
+
+</body>
+</html>
